@@ -1,0 +1,134 @@
+# This is a sample Python script.
+
+# Press Shift+F10 to execute it or replace it with your code.
+# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+import pandas.core.frame
+
+import gui_description
+import print_somewords
+import PySimpleGUI as sg
+
+import pandas as pd
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+import numpy as np
+
+# *************** Python examples for test *****************
+def print_hi(name):
+    # Use a breakpoint in the code line below to debug your script.
+    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+
+if __name__ == '__main__':
+    print_hi('user')
+
+if __name__ == '__main__':
+    print_somewords.print_somewords('Test of function in other files, which are in the same folder with main')
+    print('Test passed')
+
+gui_description.success_gui_test()
+# ***********************************************************
+
+
+def read_csv(csv_filepath):
+    data = pandas.DataFrame()   # initialization for exception errors when filepath is empty
+    if csv_filepath == '':
+        print('[LOG] [Err] File reading error: Filepath is empty or unknown')
+    else:
+        # *** Чтение csv файла:
+        data = pd.read_csv(csv_filepath, delimiter=';')
+        print('[LOG] Input csv table:\n', data)
+        # print('Input data type is ', type(data))
+    return data
+
+def group_by_AliceID(data):    # *** Группировка по ID Алис ***
+    # grouped_data = []
+    grouped_data = data.groupby('Alice ID')
+    alice_id_list = list(grouped_data.groups.keys())
+    print('Alice ID list: \n', alice_id_list)
+    return grouped_data, alice_id_list
+
+def data_processing(data):
+    data_proc = data
+    # *** Группировка по ID Алис ***
+    if 'Alice ID' in data.keys():
+        data_grouped_id, alice_ids = group_by_AliceID(data)
+        for idx in alice_ids:
+            print('Alice ID: ', idx)
+            data_id = data_grouped_id.get_group(idx)
+            parameters_list = data_id.columns
+            print('List of parameters for Alice', str(idx), ': \n', parameters_list)
+    else:
+        alice_id0 = '0x0'
+        print('There isn\'t Alice ID, so it named', alice_id0)
+        data_id = data
+        parameters_list = data_id.columns
+        print('List of parameters for alone Alice', str(alice_id0), ': \n', parameters_list)
+
+    return data_proc, parameters_list
+
+
+
+# Initialization
+filepath = ''
+# input_data = []
+input_data = pandas.DataFrame()
+qkd_params = []
+qkd_params_selected = []
+
+main_window = gui_description.make_gui_window()
+
+# Show window
+while True:  # The Event Loop
+    event, values = main_window.read()
+    print('[LOG] Initialization:')
+    print('Init input_data:\n', input_data)
+    print('Type of init input data is ', type(input_data))
+
+    print('event ', event, 'Values', values)     # debug
+    # if event in (None, sg.WIN_CLOSED, 'Exit', 'Cancel'):
+    #     break
+    if event == sg.WIN_CLOSED:
+        break
+    if event in ('Exit', '-CANCEL-'):
+        print('[LOG] EXIT or CANCEL Clicked')
+        break
+    else:
+        print('_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_\n! Event = ', event, ' !')
+        # print('--- Values Dictionary (key = value) ---')
+        # for key in values:
+        #     print(key, ' = ', values[key])
+
+        if event == '-READ-':
+            filepath = values['-FILEPATH-']
+            input_data = read_csv(filepath)
+            if input_data.empty:
+                print('Input data is empty')
+            else:
+                data_proc, qkd_params = data_processing(input_data)
+                main_window['-PARAM_LIST-'].update(values=qkd_params)
+
+        elif event == '-PARAM_SELECT-':
+            qkd_params_selected = values['-PARAM_LIST-']
+            print('Selected parameters for graph: \n', qkd_params_selected )
+
+        elif event == '-CLEAR-':
+            input_data = pandas.DataFrame()
+            print('Type of cleared input data is ', type(input_data))
+            print('!!! Data cleared !!!')
+
+        elif event == '-PLOT-':
+            if qkd_params_selected == []:
+                print('No selected parameters')
+            else:
+                # то можно строить график
+                print('Trying to plot selected parameters..')
+
+
+
+
+
+
+
+
+
+main_window.close()
