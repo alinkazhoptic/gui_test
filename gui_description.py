@@ -34,7 +34,7 @@ def make_gui_window():
 
         [ sg.Text('Log file (csv/dat/txt):', font=text_font),
           sg.InputText(key='-FILEPATH-', font=text_font_small, size=(50,10), expand_x=True),
-          sg.FileBrowse(file_types=[("*.csv", "*.csv*"), ("*.txt", "*.txt*"), ("*.dat", "*.dat*")], font=text_font, auto_size_button=True) ],  #, '*.dat', '*.dat*'
+          sg.FileBrowse(file_types=[("*.dat", "*.dat*"), ("*.csv", "*.csv*"), ("*.txt", "*.txt*")], font=text_font, auto_size_button=True) ],  #, '*.dat', '*.dat*'
 
         [ sg.Button(key='-READ-', button_text='Read', font=text_font) ],
         # какой-то график непонятный пока

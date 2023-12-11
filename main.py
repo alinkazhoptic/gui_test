@@ -97,14 +97,14 @@ def plotting_for_single_alice(data, params):
 
     text_for_graphs = ''
 
-    fig1 = plt.figure(figsize=[8, 6])
+    fig1 = plt.figure(figsize=[10, 6])
 
     plt.subplots_adjust(wspace=0.4, hspace=0.4)
     plt.rcParams['font.size'] = '8'
     plt.rcParams['font.family'] = 'Arial'
 
     fig1.suptitle('QKD output parameters', fontsize=10)
-    num_of_axs = num_of_params + 1
+    num_of_axs = num_of_params
     print('num_of_axs = ', num_of_axs)
 
     for i in range(num_of_params):
@@ -116,18 +116,18 @@ def plotting_for_single_alice(data, params):
         print( '\ndata(p) = \n', data_p )
         mean_p = np.mean( data_p )
         SKO_p = np.std( data_p )
-        text_for_graphs = text_for_graphs + p + ': \nmean = ' + str("%.2f" % mean_p) + '\nstandard deviation = ' + str("%.2f" % SKO_p) + '\n\n'
+        text_for_graphs = p + ': \nmean = ' + "{0:.2e}".format(mean_p) + '\nstandard deviation = ' + "{0:.2e}".format(mean_p) + '\n\n'  #other type of printed format str("%.f" % SKO_p)
 
         print('i = ', i)
-        ax = plt.subplot(num_of_axs, 1, i+1)
-        ax.plot( data_p, color=c_blue, linestyle='--', linewidth=line_width)
+        ax = plt.subplot(num_of_axs, 2, (i*2 + 1))
+        ax.plot( data_p, color=c_blue, linestyle='-', linewidth=line_width)
         ax.set(ylabel=params[i])
         ax.grid(True, linestyle=':', linewidth=grid_width)
         ax.legend(['data'], loc='upper right')
 
-    ax_Text = plt.subplot(num_of_axs, 1, num_of_axs)
-    ax_Text.axis('off')
-    ax_Text.text(0.1, 0.2, text_for_graphs, fontsize=10)
+        ax_Text = plt.subplot(num_of_axs, 2, (i*2 + 2))
+        ax_Text.axis('off')
+        ax_Text.text(0.1, 0.2, text_for_graphs, fontsize=10)
 
 
     return fig1
