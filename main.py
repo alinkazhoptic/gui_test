@@ -35,7 +35,7 @@ def read_csv(csv_filepath):
         print('[LOG] [Err] File reading error: Filepath is empty or unknown')
     else:
         # *** Чтение csv файла:
-        data = pd.read_csv(csv_filepath, delimiter=';')
+        data = pd.read_csv(csv_filepath, delimiter=';', na_values='-')
         print('[LOG] Input csv table:\n', data)
         # print('Input data type is ', type(data))
     return data
@@ -47,7 +47,7 @@ def read_txt(txt_filepath):
         print('[LOG] [Err] File reading error: Filepath is empty or unknown')
     else:
         # *** Чтение txt файла:
-        data = pd.read_csv(txt_filepath, delimiter = "\s+" )
+        data = pd.read_csv(txt_filepath, delimiter = "\s+", na_values=' ')
         print('[LOG] Input txt table:\n', data)
         # print('Input data type is ', type(data))
     return data
@@ -74,6 +74,31 @@ def get_parameters_list(data_id_grouped, IDx):
     parameters_list = data_single_id.columns
     print('List of parameters for Alice', str(IDx), ': \n', parameters_list)
     return data_single_id, parameters_list
+
+def delete_nan_rows(data, column_name):
+    # Поиск и удаление пустых строк (nan по дате)
+    # data - исходные данные
+    # column_name - str, название столбца, по которому ищем nan
+    print('*** NaN detection and remove ***')
+    data_index_column = data[column_name]
+    N_in = len(data_index_column)
+    print('N before nan remove =', N_in)
+
+    id_nan_rows = []
+    for i in range(N_in):
+        el = str(data_index_column[i])
+        if el == 'nan': id_nan_rows.append(i)
+
+    print('nan rows:', id_nan_rows)
+
+    data_out = data.drop(index=id_nan_rows)
+    data_out = data_out.reset_index(drop=True)
+
+    N_out = len(data_out[column_name])
+    print('N after nan remove = ', N_out)
+    print('*** NaN successfully removed ***')
+
+    return data_out
 
 
 def plotting_for_single_alice(data, params):
@@ -103,20 +128,21 @@ def plotting_for_single_alice(data, params):
     plt.rcParams['font.size'] = '8'
     plt.rcParams['font.family'] = 'Arial'
 
-    fig1.suptitle('QKD output parameters', fontsize=10)
+    fig1.suptitle('QKD parameters', fontsize=10)
     num_of_axs = num_of_params
     print('num_of_axs = ', num_of_axs)
 
     for i in range(num_of_params):
 
-        # Расчет средних значенийи СКО:
         p = params[i]
         data_p = data[p].to_numpy(na_value=0)
         print('param = ', p)
-        print( '\ndata(p) = \n', data_p )
+        print( '\ndata_p = \n', data_p )
+
+        # Расчет средних значенийи СКО:
         mean_p = np.mean( data_p )
         SKO_p = np.std( data_p )
-        text_for_graphs = p + ': \nmean = ' + "{0:.2e}".format(mean_p) + '\nstandard deviation = ' + "{0:.2e}".format(mean_p) + '\n\n'  #other type of printed format str("%.f" % SKO_p)
+        text_for_graphs = p + ': \nmean = ' + "{0:.2e}".format(mean_p) + '\nstandard deviation = ' + "{0:.2e}".format(SKO_p) + '\n\n'   #other type of printed format str("%.f" % SKO_p)
 
         print('i = ', i)
         ax = plt.subplot(num_of_axs, 2, (i*2 + 1))
@@ -188,24 +214,35 @@ while True:  # The Event Loop
             else:
                 data_proc, alice_ID_list = group_by_AliceID(input_data)
                 # print(data_proc)
-            main_window['-ALICE_ID_LIST-'].update(values=alice_ID_list)
-            main_window['-PARAM_LIST-'].update(values=qkd_params)
+                # main_window['-ALICE_ID_LIST-'].update(values=alice_ID_list)
+                main_window['-ALICE_ID_COMBO-'].update(values=alice_ID_list)
+                # main_window['-PARAM_LIST-'].update(values=qkd_params)
+                main_window['-ID_SELECT-'].update(disabled=False)
 
         elif event == '-ID_SELECT-':
-            alice_id_selected = values['-ALICE_ID_LIST-']
-            alice_id_selected = alice_id_selected[0]
-            print('Selected Alice ID ', alice_id_selected)
-            print('Type is ', type(alice_id_selected))
-            main_window['-SELECTED_ID-'].update(alice_id_selected)
+            # alice_id_selected = values['-ALICE_ID_LIST-']
+            alice_id_selected = str(values['-ALICE_ID_COMBO-'])
+            # print('\nalice_id_selected = ', alice_id_selected)
+            if alice_id_selected == []:
+                print('No Alice ID selected')
+            else:
+                # alice_id_selected = alice_id_selected[0]
+                print('Selected Alice ID ', alice_id_selected)
+                print('Type is ', type(alice_id_selected))
+                main_window['-SELECTED_ID-'].update(alice_id_selected)
+                data_proc_selected_alice = data_proc.get_group(alice_id_selected)  # Parameters for only one Alice if there are many ones
+                qkd_params = data_proc_selected_alice.columns  # ALL the parameters of QKD in log
+                main_window['-PARAM_LIST-'].update(values=qkd_params)
+                main_window['-PARAM_SELECT-'].update(disabled=False)
 
-            data_proc_selected_alice = data_proc.get_group(alice_id_selected)  # Parameters for only one Alice if there are many ones
-            qkd_params = data_proc_selected_alice.columns  # ALL the parameters of QKD in log
-            main_window['-PARAM_LIST-'].update(values=qkd_params)
+
 
         elif event == '-PARAM_SELECT-':
             qkd_params_selected = values['-PARAM_LIST-']
             main_window['-PARAM_SELECTED_LIST-'].update(qkd_params_selected)
+            main_window['-PLOT-'].update(disabled=False)
             print('Selected parameters for graph: \n', qkd_params_selected )
+
 
         # # Таблица с параметрами не работает
         # elif event == '-TO_TABLE-':
@@ -219,7 +256,8 @@ while True:  # The Event Loop
             input_data = pandas.DataFrame()
 
             alice_ID_list = []
-            main_window['-ALICE_ID_LIST-'].update(values=alice_ID_list)
+            # main_window['-ALICE_ID_LIST-'].update(values=alice_ID_list)
+            main_window['-ALICE_ID_COMBO-'].update(values=alice_ID_list)
 
             alice_id_selected = ''
             main_window['-SELECTED_ID-'].update(alice_id_selected)
@@ -233,12 +271,18 @@ while True:  # The Event Loop
             print('Type of cleared input data is ', type(input_data))
             print('!!! Data cleared !!!')
 
+            # Disable buttons
+            main_window['-ID_SELECT-'].update(disabled=True)
+            main_window['-PARAM_SELECT-'].update(disabled=True)
+            main_window['-PLOT-'].update(disabled=True)
+
         elif event == '-PLOT-':
             if qkd_params_selected == []:
                 print('No selected parameters')
             else:
                 # то можно строить график
-                print('Selecting and processing to numpy ')
+                print('Removing empty rows')
+                delete_nan_rows(data_proc_selected_alice, qkd_params_selected[0])
 
                 print('Trying to plot selected parameters..')
                 fig_graph = plotting_for_single_alice(data_proc_selected_alice, qkd_params_selected)
