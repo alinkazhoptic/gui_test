@@ -206,7 +206,7 @@ while True:  # The Event Loop
                 print('[LOG] [Err] File reading error: Filepath is empty or unknown')
             elif 'csv' in filepath:
                 input_data = read_csv(filepath)
-            elif ('txt' in filepath) or ('dat' in filepath):
+            elif ('dat' in filepath):
                 input_data = read_txt(filepath)
 
             if input_data.empty:
