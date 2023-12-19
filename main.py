@@ -220,13 +220,11 @@ while True:  # The Event Loop
                 main_window['-ID_SELECT-'].update(disabled=False)
 
         elif event == '-ID_SELECT-':
-            # alice_id_selected = values['-ALICE_ID_LIST-']
             alice_id_selected = str(values['-ALICE_ID_COMBO-'])
             # print('\nalice_id_selected = ', alice_id_selected)
-            if alice_id_selected == []:
+            if alice_id_selected == '':
                 print('No Alice ID selected')
             else:
-                # alice_id_selected = alice_id_selected[0]
                 print('Selected Alice ID ', alice_id_selected)
                 print('Type is ', type(alice_id_selected))
                 main_window['-SELECTED_ID-'].update(alice_id_selected)
@@ -244,19 +242,10 @@ while True:  # The Event Loop
             print('Selected parameters for graph: \n', qkd_params_selected )
 
 
-        # # Таблица с параметрами не работает
-        # elif event == '-TO_TABLE-':
-        #     print('Writing selected data to table')
-        #     for i in range(len(qkd_params_selected)):
-        #         main_window['-TABLE-'].update(values=data_proc_selected_alice[qkd_params_selected[i]])
-        #     print('Table was filled with data')
-
-
         elif event == '-CLEAR-':
             input_data = pandas.DataFrame()
 
             alice_ID_list = []
-            # main_window['-ALICE_ID_LIST-'].update(values=alice_ID_list)
             main_window['-ALICE_ID_COMBO-'].update(values=alice_ID_list)
 
             alice_id_selected = ''

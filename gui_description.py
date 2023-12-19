@@ -106,8 +106,7 @@ def make_gui_window():
 
 
 
-        [ # sg.Submit(key='-SUBMIT-', font=text_font),
-          sg.Cancel(key='-CANCEL-', button_text='EXIT', font=text_font, button_color='indianred') ]
+        [ sg.Cancel(key='-CANCEL-', button_text='EXIT', font=text_font, button_color='indianred', size=button_big_size) ]
     ]
     layout[-1].append(sg.Sizegrip())
 
